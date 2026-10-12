@@ -32,7 +32,7 @@ conditionalDep ConditionalDepend(double cond, int dimension, FILE* output) {
     printf("x*");
     printMatrix(xfix);
 
-    Matrix *D = builtDmatrix(n, cond);
+    Matrix *D = builtDMatrix(n, cond);
     matrixs[1] = D;
     printf("D");
     printMatrix(D);
@@ -106,7 +106,7 @@ void DimensionDepend(double cond, int dimension, FILE* output) {
     Matrix* xfix = createXVector(n);
     matrixs[0] = xfix;
 
-    Matrix *D = builtDmatrix(n, cond);
+    Matrix *D = builtDMatrix(n, cond);
     matrixs[1] = D;
 
     Matrix *Q = createQMatrix(n);
@@ -131,7 +131,7 @@ void DimensionDepend(double cond, int dimension, FILE* output) {
     matrixs[8] = y;
 
     Matrix* x = backwardSM(Comby, y, &IterCount);
-    matrixs[9] = x;
+    matrixs[9] = x;хема
 
     printf("cond\tdim\titer\n");
     printf("%.0e\t%d\t%ld\n",cond , dimension, IterCount);

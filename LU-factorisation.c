@@ -123,7 +123,7 @@ Matrix* createQMatrix(int n) {
     return Q;
 }
 
-Matrix* builtDmatrix(int n, double cond) {
+Matrix* builtDMatrix(int n, double cond) {
     double* d = (double *)malloc(sizeof(double) * n);
     for (int i = 0; i < n; i++) {
         d[i] = 1 + (cond - 1) * i / n;
