@@ -84,7 +84,13 @@ Matrix* createRandomMatrix(int n, int m) {
 }
 
 Matrix* transposeMatrix(Matrix* M) {
-    return createMatrix(M->m, M->n, M->d);
+    double *d = (double *)malloc(sizeof(double) * M->n * M->m);
+    for (int i = 0; i < M->n; i++) {
+        for (int j = 0; j < M->m; j++) {
+            d[j*M->n + i] = M->d[i*M->m + j];
+        }
+    }
+    return createMatrix(M->m, M->n, d);
 }
 
 Matrix* addMatrix(Matrix* A, Matrix* B, char op) {
