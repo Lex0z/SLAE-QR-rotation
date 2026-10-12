@@ -21,6 +21,6 @@ Matrix* backwardSM(Matrix* T, Matrix* b, long* IterCount); //backward substituti
 
 Matrix* createQMatrix(int n);
 
-Matrix* builtDmatrix(int n, double cond);
+Matrix* builtDMatrix(int n, double cond);
 
 Matrix* createXVector(int n);
