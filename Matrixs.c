@@ -80,7 +80,9 @@ Matrix* createRandomMatrix(int n, int m) {
             d[i*m + j] = (double) rand() / RAND_MAX;
         }
     }
-    return createMatrix(n, m, d);
+    Matrix* T = createMatrix(n, m, d);
+    free(d);
+    return T;
 }
 
 Matrix* transposeMatrix(Matrix* M) {
@@ -90,7 +92,9 @@ Matrix* transposeMatrix(Matrix* M) {
             d[j*M->n + i] = M->d[i*M->m + j];
         }
     }
-    return createMatrix(M->m, M->n, d);
+    Matrix* T = createMatrix(M->m, M->n, d);
+    free(d);
+    return T;
 }
 
 Matrix* addMatrix(Matrix* A, Matrix* B, char op) {

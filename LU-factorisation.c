@@ -146,5 +146,8 @@ Matrix* createXVector(int n) {
     for (int i = 0; i < n; i++) {
         d[i] = (double)i+1;
     }
-    return createMatrix(n, 1, d);
+
+    Matrix* x = createMatrix(n, 1, d);
+    free(d);
+    return x;
 }
