@@ -25,7 +25,7 @@ void fullFree(Matrix** matrixs, int len) {
 conditionalDep ConditionalDepend(double cond, int dimension, FILE* output) {
     double n = dimension;
     long IterCount = 0;
-    Matrix* matrixs[Mcount] = {};
+    Matrix* matrixs[Mcount] = { 0 };
 
     Matrix* xfix = createXVector(n);
     matrixs[0] = xfix;
@@ -101,7 +101,7 @@ conditionalDep ConditionalDepend(double cond, int dimension, FILE* output) {
 void DimensionDepend(double cond, int dimension, FILE* output) {
     long IterCount = 0;
     double n = dimension;
-    Matrix* matrixs[Mcount] = {};
+    Matrix* matrixs[Mcount] = { 0 };
 
     Matrix* xfix = createXVector(n);
     matrixs[0] = xfix;
@@ -131,7 +131,7 @@ void DimensionDepend(double cond, int dimension, FILE* output) {
     matrixs[8] = y;
 
     Matrix* x = backwardSM(Comby, y, &IterCount);
-    matrixs[9] = x;хема
+    matrixs[9] = x;
 
     printf("cond\tdim\titer\n");
     printf("%.0e\t%d\t%ld\n",cond , dimension, IterCount);
@@ -169,7 +169,8 @@ int main(void) {
     }
 
     for (int p = 0; p < 6; p++) {
-        int dim = 10 * (2<<p);
+        int dim = 10 * (2<<(p));
+        // printf("%d\n", dim);
         DimensionDepend(cond, dim, out2);
     }
     fclose(out2);

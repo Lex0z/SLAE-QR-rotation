@@ -19,21 +19,21 @@ Matrix* LU_factorisation(Matrix* A, long* IterCount) {
             double s = 0;
             for (int k = 0; k < m; ++k) {
                 s+=getL(T,m, k) * getR(T, k, j);
-                (*IterCount)++;
+                (*IterCount)+=2;
             }
             T->d[m * T->m + j] = A->d[m * A->m + j] - s; // U_{mj}
             (*IterCount)++;
-            if (m == j && T->d[m * T->m + j] == 0.0 ) {
-                printf("Error in LU_factorisation: U_{%d%d} = 0", m,j);
-                return NULL;
-            }
+        }
+        if (T->d[m * T->m + m] < 1e-12) {
+            printf("Error in LU_factorisation: U_{%d%d} = 0", m, m);
+            return NULL;
         }
 
         for (int i = m+1; i < n; ++i) {
             double s = 0;
             for (int k = 0; k < m; ++k) {
-                s+=getL(T,i,k) * getR(T,k,m);
-                (*IterCount)++;
+                s += getL(T, i, k) * getR(T, k, m);
+                (*IterCount) += 2;
             }
             T->d[i*n + m] = (A->d[i*n + m] - s) / getR(T,m,m); // L_{im}
             (*IterCount)++;
