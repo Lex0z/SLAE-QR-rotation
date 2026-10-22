@@ -169,8 +169,7 @@ int main(void) {
     }
 
     for (int p = 0; p < 6; p++) {
-        int dim = 10 * (2<<(p));
-        // printf("%d\n", dim);
+        int dim = 10 * (2<<p);
         DimensionDepend(cond, dim, out2);
     }
     fclose(out2);
