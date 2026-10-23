@@ -149,7 +149,7 @@ int main(void) {
     int n = 10;
 
     // CONDITION DEPEND
-    FILE* out = fopen("ConditionalDepend.csv", "w");
+    FILE* out = fopen("../../../data/ConditionalDepend.csv", "w");
     if (out == NULL) {
         perror("ConditionalDepend.csv");
         return 1;
@@ -162,7 +162,7 @@ int main(void) {
     fclose(out);
 
     // DIMENSION DEPEND
-    FILE* out2 = fopen("DimensionDepend.csv", "w");
+    FILE* out2 = fopen("../../../data/DimensionDepend.csv", "w");
     if (out2 == NULL) {
         perror("DimensionDepend.csv");
         return 1;

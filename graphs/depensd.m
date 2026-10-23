@@ -5,8 +5,9 @@
 clear; clc; close all;
 
 %% ---------- 1. Чтение данных -----------------------------------
-cond_data = readmatrix('../cmake-build-debug/ConditionalDepend.csv');  % [cond, err, errd, nev, nev_norm]
-dim_data  = readmatrix('../cmake-build-debug/DimensionDepend.csv');    % [cond, dimension, iter]
+%dir = "C:\Users\2pm4\source\repos\Lex0z\Solution-of-a-system-of-linear-algebraic-equations2\out\build\x64-Debug"
+cond_data = readmatrix('../data/ConditionalDepend.csv');  % [cond, err, errd, nev, nev_norm]
+dim_data  = readmatrix('../data/DimensionDepend.csv');    % [cond, dimension, iter]
 
 cond     = cond_data(:,1);
 err      = cond_data(:,2);
