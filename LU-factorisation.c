@@ -126,7 +126,7 @@ Matrix* createQMatrix(int n) {
 Matrix* builtDMatrix(int n, double cond) {
     double* d = (double *)malloc(sizeof(double) * n);
     for (int i = 0; i < n; i++) {
-        d[i] = 1 + (cond - 1) * i / n;
+        d[i] = 1 + (cond - 1) * i / (n - 1);
     }
     int m = n;
     Matrix* D = newMatrix(n, m);
