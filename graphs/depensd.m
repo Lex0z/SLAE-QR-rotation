@@ -96,7 +96,17 @@ mask = err_norm > 0 & cond > 0;
 q1 = polyfit(log(cond(mask)), log(err_norm(mask)), 1);
 fprintf('Наклон log(err_norm) vs log(cond) = %.4f  (ожидается ~1)\n', q1(1));
 
+% наклон err_norm ~ cond^q
+mask3 = err > 0 & cond > 0;
+q3 = polyfit(log(cond(mask3)), log(err(mask3)), 1);
+fprintf('Наклон log(err) vs log(cond) = %.4f  (ожидается ~1)\n', q3(1));
+
 % наклон nev_norm ~ cond^q (должен быть ~0 — невязка не зависит от cond)
 mask2 = nev_norm > 0 & cond > 0;
 q2 = polyfit(log(cond(mask2)), log(nev_norm(mask2)), 1);
 fprintf('Наклон log(nev_norm) vs log(cond) = %.4f  (ожидается ~0)\n', q2(1));
+
+% наклон nev_norm ~ cond^q (должен быть ~0 — невязка не зависит от cond)
+mask4 = nev > 0 & cond > 0;
+q4 = polyfit(log(cond(mask4)), log(nev(mask4)), 1);
+fprintf('Наклон log(nev) vs log(cond) = %.4f  (ожидается ~1)\n', q4(1));

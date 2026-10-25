@@ -4,6 +4,17 @@
 
 // #include "Matrixs.h"
 #include "LU-factorisation.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#if defined(_MSC_VER)
+    #include <direct.h>
+    #define getcwd _getcwd
+#elif defined(__GNUC__)
+    #include <unistd.h>
+#endif
+
 
 #define N 10
 #define MAXNUMBER 10
@@ -143,13 +154,15 @@ void DimensionDepend(double cond, int dimension, FILE* output) {
 
 
 int main(void) {
+    char filepath[1024];
     printf("Hello, World!\n");
 
     double cond = 1e1;
     int n = 10;
 
     // CONDITION DEPEND
-    FILE* out = fopen("../../../data/ConditionalDepend.csv", "w");
+    snprintf(filepath, sizeof(filepath), "%s/data/ConditionalDepend.csv", PROJECT_ROOT_DIR);
+    FILE* out = fopen(filepath, "w");
     if (out == NULL) {
         perror("ConditionalDepend.csv");
         return 1;
@@ -162,7 +175,8 @@ int main(void) {
     fclose(out);
 
     // DIMENSION DEPEND
-    FILE* out2 = fopen("../../../data/DimensionDepend.csv", "w");
+    snprintf(filepath, sizeof(filepath), "%s/data/DimensionDepend.csv", PROJECT_ROOT_DIR);
+    FILE* out2 = fopen(filepath, "w");
     if (out2 == NULL) {
         perror("DimensionDepend.csv");
         return 1;
