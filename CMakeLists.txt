@@ -13,3 +13,7 @@ add_executable(QR-method main.c
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+if (NOT MSVC)
+    target_link_libraries(${PROJECT_NAME} PRIVATE m)
+endif()

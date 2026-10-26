@@ -10,15 +10,23 @@
 #define DEBUG 0
 
 Matrix* newMatrix(int n, int m) {
+    if (n <= 0 || m <= 0) return NULL;
     Matrix *matrix = (Matrix*)malloc(sizeof(Matrix));
+    if (matrix == NULL) return NULL;
     matrix->n = n;
     matrix->m = m;
-    matrix->d = (double *)malloc(sizeof(double) * m * n);
+    matrix->d = (double *)malloc(sizeof(double) * (size_t)m * (size_t)n);
+    if (matrix->d == NULL) {
+        free(matrix);
+        return NULL;
+    }
     return matrix;
 }
 
 Matrix* createMatrix(int n, int m, double* d) {
+    if (d == NULL) return NULL;
     Matrix *matrix = newMatrix(n, m);
+    if (matrix == NULL) return NULL;
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
             if (DEBUG) {printf("$%lf ", d[i * m + j]);}
@@ -40,8 +48,16 @@ void printMatrix(Matrix* matrix) {
 }
 
 void freeMatrix(Matrix* matrix) {
+    if (matrix == NULL) return;
     free(matrix->d);
     free(matrix);
+}
+
+double normVector2(const Matrix* v) {
+    if (v == NULL || v->m != 1 || v->d == NULL) return NAN;
+    double sum = 0.0;
+    for (int i = 0; i < v->n; ++i) sum += v->d[i] * v->d[i];
+    return sqrt(sum);
 }
 
 double normMatrix(Matrix* T) {

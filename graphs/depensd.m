@@ -1,143 +1,61 @@
-%% =============================================================
-%  Построение графиков по результатам вычислительных экспериментов
-%  Файлы: ConditionalDepend.csv, DimensionDepend.csv
-% =============================================================
+%% Численный анализ QR-разложения методом вращений Гивенса
 clear; clc; close all;
 
-%% ---------- 1. Чтение данных -----------------------------------
-%dir = "C:\Users\2pm4\source\repos\Lex0z\Solution-of-a-system-of-linear-algebraic-equations2\out\build\x64-Debug"
-cond_data = readmatrix('../data/ConditionalDepend.csv');  % [cond, err, errd, nev, nev_norm]
-cond2_data = readmatrix('../data/ConditionalDepend2.csv');  % [cond, err, errd, nev, nev_norm]
-dim_data  = readmatrix('../data/DimensionDepend.csv');    % [cond, dimension, iter]
+%% 1. Данные эксперимента по обусловленности
+cond_data = readmatrix('../data/ConditionalDepend.csv');
+cond     = cond_data(:, 1);
+err_abs      = cond_data(:, 2); % фактическая ошибка
+residual_abs = cond_data(:, 4); % невязка
+err      = cond_data(:, 3); % относительная фактическая ошибка
+residual = cond_data(:, 5); % относительная невязка
 
-cond     = cond_data(:,1);
-err      = cond_data(:,2);
-err_norm = cond_data(:,3);
-nev      = cond_data(:,4);
-nev_norm = cond_data(:,5);
-
-cond2     = cond2_data(:,1);
-err2      = cond2_data(:,2);
-err_norm2 = cond2_data(:,3);
-nev2      = cond2_data(:,4);
-nev_norm2 = cond2_data(:,5);
-
-dim  = dim_data(:,2);
-iter = dim_data(:,3);
-
-N = 1;
-
-%% ---------- 2. График: err и nev от cond -----------------------
-figure(N); N=N+1; clf;
-loglog(cond, err_norm, 'o-', 'LineWidth', 1.6, 'MarkerSize', 9); hold on;
-loglog(cond, nev_norm, 's-', 'LineWidth', 1.6, 'MarkerSize', 9);
+figure(1);
+loglog(cond, err, 'o-', 'LineWidth', 1.6, 'MarkerSize', 7); hold on;
+loglog(cond, residual_abs, 's-', 'LineWidth', 1.6, 'MarkerSize', 7); hold on;
+loglog(cond, residual, 's-', 'LineWidth', 1.6, 'MarkerSize', 7);
 
 
-% опорная линия cond * eps_M (теоретическая оценка сверху)
 epsM = 1e-16;
 loglog(cond, cond*epsM, 'k--', 'LineWidth', 1.2);
-% loglog(cond, err, 'o--', 'LineWidth', 1.6, 'MarkerSize', 9); 
-
 
 grid on; box on;
-set(gca, 'XScale','log', 'YScale','log', 'FontSize', 12);
-xlabel('Число обусловленности  cond(A)', 'FontSize', 14);
-ylabel('Ошибка / невязка',               'FontSize', 14);
-title('Влияние числа обусловленности на точность', 'FontSize', 14);
-legend({'$\frac{\|x - x^*\|}{\|x^*\|}$', ...
-        '$\frac{\|Ax - b\|}{\|b\|}$', ...
-        '$\mathrm{cond}(A)\cdot\varepsilon_M$'}, ...
-       'Location','best', 'FontSize', 12, 'Interpreter','latex');
+xlabel('Число обусловленности cond(A)');
+ylabel('Относительная величина');
+title('Влияние числа обусловленности на точность решения');
+legend({'Относительная ошибка решения', 'Абсолютная невязка', 'Относительная невязка', '$\mathrm{cond}(A)\cdot\varepsilon_M$'}, ...
+       'Location', 'best', 'Interpreter','latex');
 
-%% ---------- 2. График: err и nev от cond -----------------------
-figure(N); N=N+1; clf;
-loglog(cond2, err_norm2, 'o-', 'LineWidth', 1.6, 'MarkerSize', 9); hold on;
-loglog(cond2, nev_norm2, 's-', 'LineWidth', 1.6, 'MarkerSize', 9);
+%% 2. Данные эксперимента по размерности
+% CSV columns: cond, dimension, arithmetic operation count
+dim_data = readmatrix('../data/DimensionDepend.csv');
+dim  = dim_data(:, 2);
+ops  = dim_data(:, 3);
 
-
-% опорная линия cond * eps_M (теоретическая оценка сверху)
-epsM = 1e-16;
-loglog(cond2, cond2*epsM, 'k--', 'LineWidth', 1.2);
-% loglog(cond, err, 'o--', 'LineWidth', 1.6, 'MarkerSize', 9); 
-
-
+figure(2);
+loglog(dim, ops, 'o-', 'LineWidth', 1.6, 'MarkerSize', 7); hold on;
+% Опорная кубическая зависимость, нормированная по последней точке.
+reference = ops(end) / dim(end)^3 * dim.^3;
+loglog(dim, reference, '--', 'LineWidth', 1.4);
 grid on; box on;
-set(gca, 'XScale','log', 'YScale','log', 'FontSize', 12);
-xlabel('Число обусловленности  cond(A)', 'FontSize', 14);
-ylabel('Ошибка / невязка',               'FontSize', 14);
-title('Влияние числа обусловленности на точность', 'FontSize', 14);
-legend({'$\frac{\|x - x^*\|}{\|x^*\|}$', ...
-        '$\frac{\|Ax - b\|}{\|b\|}$', ...
-        '$\mathrm{cond}(A)\cdot\varepsilon_M$'}, ...
-       'Location','best', 'FontSize', 12, 'Interpreter','latex');
+xlabel('Размерность системы n');
+ylabel('Количество учитываемых операций');
+title('Зависимость количества операций от размерности');
+legend({'Экспериментальные значения', 'Опорная зависимость n^3'}, ...
+       'Location', 'northwest');
 
-%% ---------- 3. График: err и nev от cond -----------------------
-figure(N); N=N+1; clf;
-loglog(cond, err, 'o-', 'LineWidth', 1.6, 'MarkerSize', 9); hold on;
-loglog(cond, nev, 's-', 'LineWidth', 1.6, 'MarkerSize', 9);
-
-
-% опорная линия cond * eps_M (теоретическая оценка сверху)
-epsM = 1e-16;
-loglog(cond, cond*epsM, 'k--', 'LineWidth', 1.2);
-% loglog(cond, err, 'o--', 'LineWidth', 1.6, 'MarkerSize', 9); 
-
-
-grid on; box on;
-set(gca, 'XScale','log', 'YScale','log', 'FontSize', 12);
-xlabel('Число обусловленности  cond(A)', 'FontSize', 14);
-ylabel('Ошибка / невязка',               'FontSize', 14);
-title('Влияние числа обусловленности на точность', 'FontSize', 14);
-legend({'$\|x - x^*\|$', ...
-        '$\|Ax - b\|$', ...
-        '$\mathrm{cond}(A)\cdot\varepsilon_M$'}, ...
-       'Location','best', 'FontSize', 12, 'Interpreter','latex');
-
-%% ---------- 4. График: iter от dim -----------------------------
-figure(N); N=N+1; clf;
-loglog(dim, iter, 'o-', 'LineWidth', 1.6, 'MarkerSize', 9); hold on;
-
-% опорная линия ~ n^3, подобранная по последней точке
-c = iter(end) / dim(end)^3;
-n_ref = logspace(log10(min(dim)), log10(max(dim)), 100);
-loglog(n_ref, c*n_ref.^3, 'k--', 'LineWidth', 1.2);
-
-grid on; box on;
-set(gca, 'XScale','log', 'YScale','log', 'FontSize', 12);
-xlabel('Размерность системы  n', 'FontSize', 14);
-ylabel('Число операций',         'FontSize', 14);
-title('Влияние размерности на объём вычислений', 'FontSize', 14);
-legend({'Эксперимент', '$\sim n^3$'}, ...
-       'Location','northwest', 'FontSize', 12, 'Interpreter','latex');
-
-%% ---------- 4. Числа для отчёта -------------------------------
-% таблица iter/n^3
-fprintf('--- iter / n^3 ---\n');
-for i = 1:length(dim)
-    fprintf('n = %4d | iter = %10d | iter/n^3 = %.4f\n', ...
-            dim(i), iter(i), iter(i)/dim(i)^3);
+%% 3. Численные значения для раздела 8 отчёта
+fprintf('Эксперимент 1: обусловленность\n');
+for i = 1:numel(cond)
+    fprintf('cond = %9.2e | rel.error = %.6e | rel.residual = %.6e\n', ...
+        cond(i), err(i), residual(i));
 end
 
-% наклон iter ~ n^p
-p = polyfit(log(dim), log(iter), 1);
-fprintf('\nНаклон log(iter) vs log(n)   = %.4f  (ожидается ~3)\n', p(1));
-
-% наклон err_norm ~ cond^q
-mask = err_norm > 0 & cond > 0;
-q1 = polyfit(log(cond(mask)), log(err_norm(mask)), 1);
-fprintf('Наклон log(err_norm) vs log(cond) = %.4f  (ожидается ~1)\n', q1(1));
-
-% наклон err_norm ~ cond^q
-mask3 = err > 0 & cond > 0;
-q3 = polyfit(log(cond(mask3)), log(err(mask3)), 1);
-fprintf('Наклон log(err) vs log(cond) = %.4f  (ожидается ~1)\n', q3(1));
-
-% наклон nev_norm ~ cond^q (должен быть ~0 — невязка не зависит от cond)
-mask2 = nev_norm > 0 & cond > 0;
-q2 = polyfit(log(cond(mask2)), log(nev_norm(mask2)), 1);
-fprintf('Наклон log(nev_norm) vs log(cond) = %.4f  (ожидается ~0)\n', q2(1));
-
-% наклон nev_norm ~ cond^q (должен быть ~0 — невязка не зависит от cond)
-mask4 = nev > 0 & cond > 0;
-q4 = polyfit(log(cond(mask4)), log(nev(mask4)), 1);
-fprintf('Наклон log(nev) vs log(cond) = %.4f  (ожидается ~1)\n', q4(1));
+fprintf('\nЭксперимент 2: размерность\n');
+for i = 1:numel(dim)
+    fprintf('n = %3d | operations = %10.0f | operations/n^3 = %.6e\n', ...
+        dim(i), ops(i), ops(i) / dim(i)^3);
+end
+if all(ops > 0)
+    fit = polyfit(log(dim), log(ops), 1);
+    fprintf('\nНаклон log(operations) от log(n): %.4f (ожидается порядок около 3)\n', fit(1));
+end

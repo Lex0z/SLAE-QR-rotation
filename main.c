@@ -1,197 +1,129 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
-
-// #include "Matrixs.h"
-#include "QR.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#if defined(_MSC_VER)
-    #include <direct.h>
-    #define getcwd _getcwd
-#elif defined(__GNUC__)
-    #include <unistd.h>
+#include "QR.h"
+
+#ifndef PROJECT_ROOT_DIR
+#define PROJECT_ROOT_DIR "."
 #endif
 
-
-#define N 10
-#define MAXNUMBER 10
-#define Mcount 13
-#define DEBUG 0
-
-typedef struct {
-    double condition, error, rel_err, nev;
-}conditionalDep;
-
-void fullFree(Matrix** matrixs, int len) {
-    for (int i = len-1; i >= 0; i--) {
-        if (matrixs[i] != NULL) {
-            freeMatrix(matrixs[i]);
-        }
+static Matrix* buildAMatrix(int n, double cond) {
+    Matrix* Q = createQMatrix(n);
+    Matrix* D = builtDMatrix(n, cond);
+    if (Q == NULL || D == NULL) {
+        freeMatrix(Q);
+        freeMatrix(D);
+        return NULL;
     }
-}
-
-conditionalDep ConditionalDepend(double cond, int dimension, FILE* output) {
-    double n = dimension;
-    long IterCount = 0;
-    Matrix* matrixs[Mcount] = { 0 };
-
-    Matrix* xfix = createXVector(n);
-    matrixs[0] = xfix;
-    printf("x*");
-    printMatrix(xfix);
-
-    Matrix *D = builtDMatrix(n, cond);
-    matrixs[1] = D;
-    printf("D");
-    printMatrix(D);
-
-    Matrix *Q = createQMatrix(n);
-    matrixs[2] = Q;
-    printf("Q");
-    printMatrix(Q);
 
     Matrix* QD = multiplyMatrix(Q, D);
-    matrixs[3] = QD;
-    printf("QD");
-    printMatrix(QD);
-
     Matrix* Qt = transposeMatrix(Q);
-    matrixs[4] = Qt;
-    printf("Qt");
-    printMatrix(Qt);
-    // //
-    // Matrix* Qt = createQMatrix(n);
-    // matrixs[4] = Qt;
-    // printf("Qt");
-    // printMatrix(Qt);
+    Matrix* A = NULL;
+    if (QD != NULL && Qt != NULL) A = multiplyMatrix(QD, Qt);
 
-    Matrix* A = multiplyMatrix(QD, Qt);
-    matrixs[5] = A;
-    printf("A");
-    printMatrix(A);
-
-    Matrix* b = multiplyMatrix(A, xfix);
-    matrixs[6] = b;
-    printf("b");
-    printMatrix(b);
-
-    Matrix* Comby = LU_factorisation(A, &IterCount); // LU = A
-    matrixs[7] = Comby;
-    printf("Comby");
-    printMatrix(Comby);
-
-    Matrix* y = forwardSM(Comby, b, &IterCount);
-    matrixs[8] = y;
-    printf("y");
-    printMatrix(y);
-
-    Matrix* x = backwardSM(Comby, y, &IterCount);
-    matrixs[9] = x;
-    printf("x");
-    printMatrix(x);
-
-    Matrix* errVector = addMatrix(x, xfix, '-');
-    printf("err");
-    printMatrix(errVector);
-    matrixs[10] = errVector;
-    double err = normMatrix(errVector);
-    double err_norm = err / normMatrix(xfix);
-
-    Matrix* b2 = multiplyMatrix(A, x);
-    matrixs[11] = b2;
-    Matrix* nevVector = addMatrix(b2, b, '-');
-    matrixs[12] = nevVector;
-    double nev = normMatrix(nevVector);
-    double nev_norm = nev / normMatrix(b);
-
-    fullFree(matrixs, Mcount);
-    printf("cond\terr\t\t\t\terrd\t\t\tnev\tnev_norm\n");
-    fprintf(output, "%e,%e,%e,%e,%e\n",cond , err, err_norm, nev, nev_norm);
-    printf("%.0e\t% e\t% e\t% e\t% e\n",cond , err, err_norm, nev, nev_norm);
-
+    freeMatrix(Q);
+    freeMatrix(D);
+    freeMatrix(QD);
+    freeMatrix(Qt);
+    return A;
 }
 
-void DimensionDepend(double cond, int dimension, FILE* output) {
-    long IterCount = 0;
-    double n = dimension;
-    Matrix* matrixs[Mcount] = { 0 };
+static int ConditionalDepend(double cond, int n, FILE* output) {
+    long operationCount = 0;
+    /* Keep Q identical across the condition-number sweep. */
+    srand(1);
+    Matrix* A = buildAMatrix(n, cond);
+    Matrix* xExact = createXVector(n);
+    Matrix* b = (A != NULL && xExact != NULL) ? multiplyMatrix(A, xExact) : NULL;
+    Matrix* x = (A != NULL && b != NULL) ? QRsolve(A, b, &operationCount) : NULL;
+    Matrix* error = (x != NULL && xExact != NULL) ? addMatrix(x, xExact, '-') : NULL;
+    Matrix* Ax = (A != NULL && x != NULL) ? multiplyMatrix(A, x) : NULL;
+    Matrix* residual = (Ax != NULL && b != NULL) ? addMatrix(Ax, b, '-') : NULL;
 
-    Matrix* xfix = createXVector(n);
-    matrixs[0] = xfix;
+    if (A == NULL || xExact == NULL || b == NULL || x == NULL || error == NULL || Ax == NULL || residual == NULL) {
+        fprintf(stderr, "Ошибка при решении системы: n=%d, cond=%g\n", n, cond);
+        freeMatrix(A); freeMatrix(xExact); freeMatrix(b); freeMatrix(x);
+        freeMatrix(error); freeMatrix(Ax); freeMatrix(residual);
+        return 0;
+    }
 
-    Matrix *D = builtDMatrix(n, cond);
-    matrixs[1] = D;
+    const double errorNorm = normVector2(error);
+    const double exactNorm = normVector2(xExact);
+    const double residualNorm = normVector2(residual);
+    const double bNorm = normVector2(b);
+    const double relativeError = (exactNorm > 0.0) ? errorNorm / exactNorm : NAN;
+    const double relativeResidual = (bNorm > 0.0) ? residualNorm / bNorm : residualNorm;
 
-    Matrix *Q = createQMatrix(n);
-    matrixs[2] = Q;
+    /* CSV columns: cond, absolute error, relative error, residual, relative residual */
+    fprintf(output, "%.12e,%.12e,%.12e,%.12e,%.12e\n",
+            cond, errorNorm, relativeError, residualNorm, relativeResidual);
+    printf("cond=%g, n=%d, rel_error=%.4e, rel_residual=%.4e\n",
+           cond, n, relativeError, relativeResidual);
 
-    Matrix* QD = multiplyMatrix(Q, D);
-    matrixs[3] = QD;
-
-    Matrix* Qt = transposeMatrix(Q);
-    matrixs[4] = Qt;
-
-    Matrix* A = multiplyMatrix(QD, Qt);
-    matrixs[5] = A;
-
-    Matrix* b = multiplyMatrix(A, xfix);
-    matrixs[6] = b;
-
-    Matrix* Comby = LU_factorisation(A, &IterCount); // LU = A
-    matrixs[7] = Comby;
-
-    Matrix* y = forwardSM(Comby, b, &IterCount);
-    matrixs[8] = y;
-
-    Matrix* x = backwardSM(Comby, y, &IterCount);
-    matrixs[9] = x;
-
-    printf("cond\tdim\titer\n");
-    printf("%.0e\t%d\t%ld\n",cond , dimension, IterCount);
-    fprintf(output, "%e,%d,%ld\n", cond , dimension, IterCount);
-
-    fullFree(matrixs, Mcount);
-
+    freeMatrix(A); freeMatrix(xExact); freeMatrix(b); freeMatrix(x);
+    freeMatrix(error); freeMatrix(Ax); freeMatrix(residual);
+    return 1;
 }
 
+static int DimensionDepend(double cond, int n, FILE* output) {
+    long operationCount = 0;
+    Matrix* A = buildAMatrix(n, cond);
+    Matrix* xExact = createXVector(n);
+    Matrix* b = (A != NULL && xExact != NULL) ? multiplyMatrix(A, xExact) : NULL;
+    Matrix* x = (A != NULL && b != NULL) ? QRsolve(A, b, &operationCount) : NULL;
+
+    if (A == NULL || xExact == NULL || b == NULL || x == NULL) {
+        fprintf(stderr, "Ошибка при решении системы: n=%d, cond=%g\n", n, cond);
+        freeMatrix(A); freeMatrix(xExact); freeMatrix(b); freeMatrix(x);
+        return 0;
+    }
+
+    /* CSV columns: cond, dimension, arithmetic operation count */
+    fprintf(output, "%.12e,%d,%ld\n", cond, n, operationCount);
+    printf("cond=%g, n=%d, operations=%ld\n", cond, n, operationCount);
+
+    freeMatrix(A); freeMatrix(xExact); freeMatrix(b); freeMatrix(x);
+    return 1;
+}
+
+static int openOutput(const char* relativePath, char* path, size_t pathSize, FILE** output) {
+    snprintf(path, pathSize, "%s/%s", PROJECT_ROOT_DIR, relativePath);
+    *output = fopen(path, "w");
+    if (*output == NULL) {
+        perror(path);
+        return 0;
+    }
+    return 1;
+}
 
 int main(void) {
-    char filepath[1024];
-    printf("Hello, World!\n");
+    char path[1024];
+    FILE* output = NULL;
+    const int conditionDimension = 10;
+    const double dimensionCondition = 10.0;
+    const size_t conditionCount = 15;
 
-    double cond = 1e1;
-    int n = 10;
+    srand(1); /* reproducible random Householder vectors */
 
-    // CONDITION DEPEND
-    snprintf(filepath, sizeof(filepath), "%s/data/ConditionalDepend.csv", PROJECT_ROOT_DIR);
-    FILE* out = fopen(filepath, "w");
-    if (out == NULL) {
-        perror("ConditionalDepend.csv");
-        return 1;
+    if (!openOutput("data/ConditionalDepend.csv", path, sizeof(path), &output)) return 1;
+    for (size_t i = 0; i < conditionCount; ++i) {
+        double cond = pow(10.0,(int)(i+1));
+        if (!ConditionalDepend(cond, conditionDimension, output)) {
+            fclose(output);
+            return 1;
+        }
     }
+    fclose(output);
 
-    for (int p = 1; p < 16; p++) {
-        double cond = pow(10,p);
-        ConditionalDepend(cond, n, out);
+    if (!openOutput("data/DimensionDepend.csv", path, sizeof(path), &output)) return 1;
+    for (int k = 1; k <= 20; ++k) {
+        const int n = 15 * k;
+        if (!DimensionDepend(dimensionCondition, n, output)) {
+            fclose(output);
+            return 1;
+        }
     }
-    fclose(out);
-
-    // DIMENSION DEPEND
-    snprintf(filepath, sizeof(filepath), "%s/data/DimensionDepend.csv", PROJECT_ROOT_DIR);
-    FILE* out2 = fopen(filepath, "w");
-    if (out2 == NULL) {
-        perror("DimensionDepend.csv");
-        return 1;
-    }
-
-    for (int p = 0; p < 6; p++) {
-        int dim = 10 * (2<<p);
-        DimensionDepend(cond, dim, out2);
-    }
-    fclose(out2);
-
+    fclose(output);
     return 0;
 }
