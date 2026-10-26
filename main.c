@@ -3,7 +3,7 @@
 #include <math.h>
 
 // #include "Matrixs.h"
-#include "LU-factorisation.h"
+#include "QR.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -62,6 +62,11 @@ conditionalDep ConditionalDepend(double cond, int dimension, FILE* output) {
     matrixs[4] = Qt;
     printf("Qt");
     printMatrix(Qt);
+    // //
+    // Matrix* Qt = createQMatrix(n);
+    // matrixs[4] = Qt;
+    // printf("Qt");
+    // printMatrix(Qt);
 
     Matrix* A = multiplyMatrix(QD, Qt);
     matrixs[5] = A;

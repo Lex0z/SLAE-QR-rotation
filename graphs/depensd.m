@@ -7,6 +7,7 @@ clear; clc; close all;
 %% ---------- 1. Чтение данных -----------------------------------
 %dir = "C:\Users\2pm4\source\repos\Lex0z\Solution-of-a-system-of-linear-algebraic-equations2\out\build\x64-Debug"
 cond_data = readmatrix('../data/ConditionalDepend.csv');  % [cond, err, errd, nev, nev_norm]
+cond2_data = readmatrix('../data/ConditionalDepend2.csv');  % [cond, err, errd, nev, nev_norm]
 dim_data  = readmatrix('../data/DimensionDepend.csv');    % [cond, dimension, iter]
 
 cond     = cond_data(:,1);
@@ -15,11 +16,19 @@ err_norm = cond_data(:,3);
 nev      = cond_data(:,4);
 nev_norm = cond_data(:,5);
 
+cond2     = cond2_data(:,1);
+err2      = cond2_data(:,2);
+err_norm2 = cond2_data(:,3);
+nev2      = cond2_data(:,4);
+nev_norm2 = cond2_data(:,5);
+
 dim  = dim_data(:,2);
 iter = dim_data(:,3);
 
+N = 1;
+
 %% ---------- 2. График: err и nev от cond -----------------------
-figure(1); clf;
+figure(N); N=N+1; clf;
 loglog(cond, err_norm, 'o-', 'LineWidth', 1.6, 'MarkerSize', 9); hold on;
 loglog(cond, nev_norm, 's-', 'LineWidth', 1.6, 'MarkerSize', 9);
 
@@ -40,8 +49,30 @@ legend({'$\frac{\|x - x^*\|}{\|x^*\|}$', ...
         '$\mathrm{cond}(A)\cdot\varepsilon_M$'}, ...
        'Location','best', 'FontSize', 12, 'Interpreter','latex');
 
+%% ---------- 2. График: err и nev от cond -----------------------
+figure(N); N=N+1; clf;
+loglog(cond2, err_norm2, 'o-', 'LineWidth', 1.6, 'MarkerSize', 9); hold on;
+loglog(cond2, nev_norm2, 's-', 'LineWidth', 1.6, 'MarkerSize', 9);
+
+
+% опорная линия cond * eps_M (теоретическая оценка сверху)
+epsM = 1e-16;
+loglog(cond2, cond2*epsM, 'k--', 'LineWidth', 1.2);
+% loglog(cond, err, 'o--', 'LineWidth', 1.6, 'MarkerSize', 9); 
+
+
+grid on; box on;
+set(gca, 'XScale','log', 'YScale','log', 'FontSize', 12);
+xlabel('Число обусловленности  cond(A)', 'FontSize', 14);
+ylabel('Ошибка / невязка',               'FontSize', 14);
+title('Влияние числа обусловленности на точность', 'FontSize', 14);
+legend({'$\frac{\|x - x^*\|}{\|x^*\|}$', ...
+        '$\frac{\|Ax - b\|}{\|b\|}$', ...
+        '$\mathrm{cond}(A)\cdot\varepsilon_M$'}, ...
+       'Location','best', 'FontSize', 12, 'Interpreter','latex');
+
 %% ---------- 3. График: err и nev от cond -----------------------
-figure(2); clf;
+figure(N); N=N+1; clf;
 loglog(cond, err, 'o-', 'LineWidth', 1.6, 'MarkerSize', 9); hold on;
 loglog(cond, nev, 's-', 'LineWidth', 1.6, 'MarkerSize', 9);
 
@@ -63,7 +94,7 @@ legend({'$\|x - x^*\|$', ...
        'Location','best', 'FontSize', 12, 'Interpreter','latex');
 
 %% ---------- 4. График: iter от dim -----------------------------
-figure(3); clf;
+figure(N); N=N+1; clf;
 loglog(dim, iter, 'o-', 'LineWidth', 1.6, 'MarkerSize', 9); hold on;
 
 % опорная линия ~ n^3, подобранная по последней точке

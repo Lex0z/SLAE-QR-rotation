@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.23)
-project(SLAE-LU-method C)
+project(QR-method C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(SLAE-LU-method main.c
+add_executable(QR-method main.c
         Matrixs.c
         Matrixs.h
-        LU-factorisation.c
-        LU-factorisation.h)
+        QR.c
+        QR.h)
 
 # Передаем путь к корню проекта в код как макрос PROJECT_ROOT_DIR
 target_compile_definitions(${PROJECT_NAME} PRIVATE
